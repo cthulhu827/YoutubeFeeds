@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoutubeFeeds.Server", "YoutubeFeeds.Server\YoutubeFeeds.Server.csproj", "{212AE14F-94F2-4C6C-98E8-CF0C1CCA9C20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoutubeFeeds.Core", "YoutubeFeeds.Core\YoutubeFeeds.Core.csproj", "{460E2BB1-480D-4559-BC53-D6FE1B50CCA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoutubeFeeds.Console", "YoutubeFeeds.Console\YoutubeFeeds.Console.csproj", "{B1378C7B-410B-459E-86AB-E72830DA6200}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{212AE14F-94F2-4C6C-98E8-CF0C1CCA9C20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{212AE14F-94F2-4C6C-98E8-CF0C1CCA9C20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{212AE14F-94F2-4C6C-98E8-CF0C1CCA9C20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{212AE14F-94F2-4C6C-98E8-CF0C1CCA9C20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{460E2BB1-480D-4559-BC53-D6FE1B50CCA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{460E2BB1-480D-4559-BC53-D6FE1B50CCA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{460E2BB1-480D-4559-BC53-D6FE1B50CCA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{460E2BB1-480D-4559-BC53-D6FE1B50CCA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1378C7B-410B-459E-86AB-E72830DA6200}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1378C7B-410B-459E-86AB-E72830DA6200}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1378C7B-410B-459E-86AB-E72830DA6200}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1378C7B-410B-459E-86AB-E72830DA6200}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

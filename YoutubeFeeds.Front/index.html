@@ -1,0 +1,134 @@
+<html>
+
+<head>
+    <script type='text/javascript' src='jquery-3.7.0.min.js'></script>
+    <script type='text/javascript' src='knockout-3.5.1.js'></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="flex-wrapper" data-bind="foreach: videos">
+        <div class="item" data-bind="class: statusClass">
+            <div class="item-header">
+                <div data-bind="if: isUpdating" class="item-loading">
+                    <img src="loading.gif" />
+                </div>
+                <div class="item-buttons" data-bind="foreach: vmStatuses">
+                    <!-- ko if: isApplied -->
+                    <span data-bind="text: spanText"></span>
+                    <!-- /ko -->
+                    <!-- ko ifnot: isApplied -->
+                    <button class="item-button" type="button" data-bind="text: buttonText, click: onClick"></button>
+                    <!-- /ko -->
+                </div>
+            </div>
+            <div class="item-video">
+                <a data-bind="attr: { href: videoUrl }" target=”_blank”>
+                    <img class="item-video-img" data-bind="attr:{src:previewUrl}" />
+                </a>
+            </div>
+            <div class="item-title">
+                <a data-bind="attr: { href: videoUrl }" target=”_blank”>
+                    <span data-bind="text: title"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script type='text/javascript'>
+        function VM_Status(value, spanText, buttonText) {
+            var self = this;
+            self.value = value;
+            self.spanText = spanText;
+            self.buttonText = buttonText;
+        };
+
+        function VM_Video(vm) {
+            var self = this;
+
+            self.id = vm.id;
+            self.title = vm.title;
+            self.previewUrl = vm.previewUrl;
+            self.videoUrl = vm.videoUrl;
+            self.status = ko.observable(vm.status);
+
+            self.isUpdating = ko.observable(false);
+
+            self.vmStatuses = [
+                new VM_Status(1, "Checked", "Check"),
+                new VM_Status(2, "Viewed", "View"),
+                new VM_Status(4, "Skipped", "Skip")
+            ];
+            for (vmStatus of self.vmStatuses) {
+                const closure = vmStatus.value;
+
+                vmStatus.isApplied = ko.computed(function () {
+                    return closure == self.status();
+                });
+
+                vmStatus.onClick = function () {
+                    var request = {
+                        id: self.id,
+                        status: closure
+                    };
+
+                    self.isUpdating(true);
+                    $.ajax({
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        'type': 'POST',
+                        'url': "http://localhost:5000/api/videos/update_status",
+                        'data': JSON.stringify(request),
+                        'dataType': 'json',
+                        'success': function (response) {
+                            self.isUpdating(false);
+                            self.status(response.newStatus);
+                        },
+                        'error': function () {
+                            self.isUpdating(false);
+                        }
+                    });
+                };
+            }
+
+            self.statusClass = ko.computed(function () {
+                switch (self.status()) {
+                    case 1:
+                        return "video-status-checked";
+                    case 2:
+                        return "video-status-viewed";
+                    case 4:
+                        return "video-status-skipped";
+                    default:
+                        return "video-status-new";
+                }
+            });
+        };
+
+        var myViewModel = {
+            videos: ko.observable([])
+        };
+
+        ko.applyBindings(myViewModel);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const channelId = urlParams.get('channelId');
+        console.log("Channel ID = %s", channelId);
+
+        var url = "http://localhost:5000/api/videos/all";
+        if (channelId != null)
+            url = url + "/" + channelId;
+        $.getJSON(url, function (viewModels) {
+            var videos = [];
+            for (viewModel of viewModels) {
+                var video = new VM_Video(viewModel);
+                videos.push(video);
+            }
+            myViewModel.videos(videos);
+        });
+    </script>
+</body>
+
+</html>

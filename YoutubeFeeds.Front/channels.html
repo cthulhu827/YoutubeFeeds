@@ -1,0 +1,72 @@
+<html>
+
+<head>
+    <script type='text/javascript' src='jquery-3.7.0.min.js'></script>
+    <script type='text/javascript' src='knockout-3.5.1.js'></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <table class="channels-table">
+        <thead>
+            <tr>
+                <th class="channels-table channels-table-header">Channel</th>
+                <th class="channels-table channels-table-header">New</th>
+                <th class="channels-table channels-table-header">Unwatched</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: channels">
+            <tr>
+                <td class="channels-table">
+                    <a data-bind="attr: { href: videosUrl }" target=”_blank”>
+                        <span data-bind="text: ($index() + 1)"></span>.
+                        <span data-bind="text: title"></span>
+                    </a>
+                </td>
+                <td class="channels-table channels-table-count">
+                    <!-- ko if: hasNew -->
+                    <span data-bind="text: newCount"></span>
+                    <!-- /ko -->
+                </td>
+                <td class="channels-table channels-table-count">
+                    <!-- ko if: hasChecked -->
+                    <span data-bind="text: checkedCount"></span>
+                    <!-- /ko -->
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script type='text/javascript'>
+        function VM_UnwatchedChannel(vm) {
+            var self = this;
+
+            self.id = vm.id;
+            self.title = vm.title;
+            self.newCount = vm.new;
+            self.checkedCount = vm.checked;
+
+            self.hasNew = vm.new > 0;
+            self.hasChecked = vm.checked > 0;
+
+            self.videosUrl = "index.html?channelId=" + vm.id;
+        };
+
+        var myViewModel = {
+            channels: ko.observable([])
+        };
+
+        ko.applyBindings(myViewModel);
+
+        $.getJSON("http://localhost:5000/api/channels/unwatched", function (viewModels) {
+            var channels = [];
+            for (viewModel of viewModels) {
+                var channel = new VM_UnwatchedChannel(viewModel);
+                channels.push(channel);
+            }
+            myViewModel.channels(channels);
+        });
+    </script>
+</body>
+
+</html>
