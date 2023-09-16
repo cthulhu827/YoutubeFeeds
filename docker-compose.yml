@@ -1,0 +1,23 @@
+version: '3.4'
+services:
+
+  ytf-server:
+    container_name: ytf-server
+    build: ./Server
+    restart: always
+    ports:
+      - 5000:5000
+
+  ytf-front:
+    container_name: ytf-front
+    build: ./Front
+    restart: always
+    ports:
+      - 5001:5001
+    depends_on:
+      - ytf-server
+
+networks:
+  default:
+    external:
+      name: ytf-network
