@@ -54,5 +54,13 @@ namespace YoutubeFeeds.Server.Controllers
             var subscribed = await channelService.SubscribeChannel(request.VideoUrl);
             return new SubscribeChannelResponse(subscribed);
         }
+
+        [HttpPost]
+        [Route("/api/videos/update_all_channels")]
+        public async Task<UpdateAllChannelsResponse> UpdateAllChannels()
+        {
+            var result = await channelService.UpdateAllChannels();
+            return new UpdateAllChannelsResponse(result);
+        }
     }
 }

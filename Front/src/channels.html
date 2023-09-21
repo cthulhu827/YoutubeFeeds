@@ -37,6 +37,8 @@
         </tbody>
     </table>
 
+    <button class="update-button" data-bind="text: updateButton.title, click: updateButton.onClick"></button>
+
     <script type='text/javascript'>
         function VM_UnwatchedChannel(vm) {
             var self = this;
@@ -52,8 +54,38 @@
             self.videosUrl = "index.html?channelId=" + vm.id;
         };
 
+        function VM_UpdateButton() {
+            var self = this;
+
+            self.onClick = function () {
+                var request = {};
+                self.title("Updating...");
+                $.ajax({
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    'type': 'POST',
+                    'url': "http://localhost:5000/api/videos/update_all_channels",
+                    'data': JSON.stringify(request),
+                    'dataType': 'json',
+                    'success': function (response) {
+                        self.title("Updated successfully - " + response.newVideosCount + " new video(s)");
+                    },
+                    'error': function (err) {
+                        self.title("Update failed");
+                        console.log(err);
+                    }
+                });
+            };
+
+            self.title = ko.observable("Update");
+        };
+
         var myViewModel = {
-            channels: ko.observable([])
+            channels: ko.observable([]),
+
+            updateButton: new VM_UpdateButton()
         };
 
         ko.applyBindings(myViewModel);
