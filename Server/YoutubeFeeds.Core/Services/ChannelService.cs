@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -12,11 +13,13 @@ namespace YoutubeFeeds.Core
     {
         private readonly VideoStorage storage;
         private readonly IYoutubeSettings youtubeSettings;
+        private readonly IServiceProvider serviceProvider;
 
-        public ChannelService(VideoStorage storage, IYoutubeSettings youtubeSettings)
+        public ChannelService(IServiceProvider serviceProvider)
         {
-            this.storage = storage;
-            this.youtubeSettings = youtubeSettings;
+            this.serviceProvider = serviceProvider;
+            this.storage = serviceProvider.GetRequiredService<VideoStorage>();
+            this.youtubeSettings = serviceProvider.GetRequiredService<IYoutubeSettings>();
         }
 
         public async Task<bool> SubscribeChannel(string videoUrl)
@@ -60,6 +63,41 @@ namespace YoutubeFeeds.Core
             }
 
             return result;
+        }
+
+        public async Task<int> UpdateAllChannels()
+        {
+            Console.Write($"{DateTime.Now} Updating channels");
+
+            var channels = await storage.GetAllChannels();
+
+            var result = new Dictionary<Channel, Video[]>();
+            var resultCount = 0;
+            foreach (var channel in channels)
+            {
+                Console.Write(".");
+                var channelParser = new ChannelParser(channel, serviceProvider);
+                var savedVideos = await channelParser.Update();
+                if (savedVideos.Any())
+                {
+                    result.Add(channel, savedVideos);
+                    resultCount += savedVideos.Length;
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Done.");
+
+            foreach (var (channel, savedVideos) in result)
+            {
+                Console.WriteLine($"Channel '{channel.Title}', {savedVideos.Length} new video(s):");
+                foreach (var video in savedVideos)
+                {
+                    Console.WriteLine($"- {video.Title}");
+                }
+            }
+
+            return resultCount;
         }
 
         private async Task<(string, string)> GetChannel(string videoId)
