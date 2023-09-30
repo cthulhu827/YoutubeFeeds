@@ -111,6 +111,18 @@ namespace YoutubeFeeds.Core
             }
         }
 
+        public async Task UpdateVideoStatus(string youtubeId, VideoStatus newStatus)
+        {
+            var query =
+                $"update {Video.TableName} " +
+                $"set {Video.StatusCol} = @{nameof(newStatus)} " +
+                $"where {Video.YoutubeIdCol} = @{nameof(youtubeId)} ";
+            using (var context = await dbConnectionFactory.Open())
+            {
+                await context.ExecuteAsync(query, new { youtubeId, newStatus });
+            }
+        }
+
         public async Task SaveChannel(Channel channel)
         {
             var query =

@@ -7,14 +7,18 @@ namespace YoutubeFeeds.Server.ViewModels
     [DataContract]
     public class UpdateStatusRequest
     {
-        public UpdateStatusRequest(Guid id, VideoStatus status)
+        public UpdateStatusRequest(Guid? id, string? videoUrl, VideoStatus status)
         {
             Id = id;
+            VideoUrl = videoUrl;
             Status = status;
         }
 
-        [DataMember(IsRequired = true)]
-        public Guid Id { get; }
+        [DataMember(IsRequired = false)]
+        public Guid? Id { get; }
+
+        [DataMember(IsRequired = false)]
+        public string? VideoUrl { get; }
 
         [DataMember(IsRequired = true)]
         public VideoStatus Status { get; }

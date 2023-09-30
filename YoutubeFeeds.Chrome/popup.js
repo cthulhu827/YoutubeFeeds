@@ -4,61 +4,99 @@ async function getCurrentTab() {
     return tab;
 };
 
-function applyClasses(newStatus) {
-    const knownStatuses = ["ok", "fail", "loading"];
-    for (var theStatus of knownStatuses) {
-        if (theStatus == newStatus)
-            $("#the_span").addClass("status-" + theStatus);
-        else
-            $("#the_span").removeClass("status-" + theStatus);
-    }
-};
+function VM_ButtonWithStatus(url, requestBuilder, buttonSelector, spanSelector, statusTexts) {
+    var self = this;
 
-function resetStatusByTimeout() {
-    setTimeout(function () { setStatus(""); }, 2000);
-};
+    self.url = url;
+    self.requestBuilder = requestBuilder;
+    self.buttonSelector = buttonSelector;
+    self.spanSelector = spanSelector;
+    self.statusTexts = statusTexts;
 
-function setStatus(newStatus) {
-    applyClasses(newStatus);
-    switch (newStatus) {
-        case "loading":
-            $("#the_span").text("Subscribing to the channel...");
-            break;
-        case "ok":
-            $("#the_span").text("Successfully subscribed to the channel");
-            resetStatusByTimeout();
-            break;
-        case "fail":
-            $("#the_span").text("Failed to subscribe to the channel");
-            resetStatusByTimeout();
-            break;
-        default:
-            $("#the_span").text("Click the button to subscribe to the channel");
-            break;
-    }
-};
-
-function subscribe() {
-    setStatus("loading")
-    var request = { "videoUrl": tab.url };
-    $.ajax({
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        'type': 'POST',
-        'url': "http://localhost:5000/api/videos/subscribe_channel",
-        'data': JSON.stringify(request),
-        'dataType': 'json',
-        'success': function (response) {
-            setStatus("ok");
-        },
-        'error': function () {
-            setStatus("fail");
+    self.applyClasses = function(newStatus) {
+        const knownStatuses = ["ok", "fail", "loading"];
+        for (var theStatus of knownStatuses) {
+            if (theStatus == newStatus)
+                $(self.spanSelector).addClass("status-" + theStatus);
+            else
+                $(self.spanSelector).removeClass("status-" + theStatus);
         }
-    });
+    };
+    
+    self.resetStatusByTimeout = function() {
+        setTimeout(function () { self.setStatus(""); }, 2000);
+    };
+
+    self.setStatus = function(newStatus) {
+        self.applyClasses(newStatus);
+        switch (newStatus) {
+            case "loading":
+                $(self.spanSelector).text(self.statusTexts[1]);
+                break;
+            case "ok":
+                $(self.spanSelector).text(self.statusTexts[2]);
+                self.resetStatusByTimeout();
+                break;
+            case "fail":
+                $(self.spanSelector).text(self.statusTexts[3]);
+                self.resetStatusByTimeout();
+                break;
+            default:
+                $(self.spanSelector).text(self.statusTexts[0]);
+                break;
+        }
+    };
+
+    self.click = function() {
+        self.setStatus("loading")
+        var request = requestBuilder();
+        $.ajax({
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            'type': 'POST',
+            'url': self.url,
+            'data': JSON.stringify(request),
+            'dataType': 'json',
+            'success': function (response) {
+                self.setStatus("ok");
+            },
+            'error': function () {
+                self.setStatus("fail");
+            }
+        });
+    };
+
+    $(self.buttonSelector).on("click", self.click);
 };
 
 let tab = await getCurrentTab();
 
-$("#the_button").on("click", subscribe);
+var btnSubscribe = new VM_ButtonWithStatus(
+    "http://localhost:5000/api/videos/subscribe_channel",
+    function () {
+        return { "videoUrl": tab.url };
+    },
+    "#subscribe_button",
+    "#subscribe_span",
+    [
+        "Click the button to subscribe to the channel",
+        "Subscribing to the channel...",
+        "Successfully subscribed to the channel",
+        "Failed to subscribe to the channel"
+    ]);
+
+var btnMarkAsViewed = new VM_ButtonWithStatus(
+    "http://localhost:5000/api/videos/update_status",
+    function () {
+        return { "videoUrl": tab.url, "status": 2 };
+    },
+    "#viewed_button",
+    "#viewed_span",
+    [
+        "Click the button to mark the video as viewed",
+        "Marking video as viewed...",
+        "Successfully marked video as viewed",
+        "Failed to mark video as viewed"
+    ]);

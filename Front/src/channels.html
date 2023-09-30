@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody data-bind="foreach: channels">
-            <tr>
+            <tr data-bind="css: { 'has-new': hasNew }">
                 <td class="channels-table">
                     <a data-bind="attr: { href: videosUrl }" target=”_blank”>
                         <span data-bind="text: ($index() + 1)"></span>.

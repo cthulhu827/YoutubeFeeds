@@ -40,11 +40,27 @@ namespace YoutubeFeeds.Server.Controllers
 
         [HttpPost]
         [Route("/api/videos/update_status")]
-        public async Task<UpdateStatusResponse> UpdateStatus([FromBody] UpdateStatusRequest request)
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateStatusRequest request)
         {
-            Console.WriteLine($"Updating {request.Id}");
-            await storage.UpdateVideoStatus(request.Id, request.Status);
-            return new UpdateStatusResponse(request.Status);
+            if (request.Id != null)
+            {
+                Console.WriteLine($"Updating {request.Id.Value}");
+                await storage.UpdateVideoStatus(request.Id.Value, request.Status);
+                return Ok(new UpdateStatusResponse(request.Status));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.VideoUrl))
+            {
+                var youtubeId = request.VideoUrl.GetVideoId();
+                if (!string.IsNullOrWhiteSpace(youtubeId))
+                {
+                    Console.WriteLine($"Updating {youtubeId}");
+                    await storage.UpdateVideoStatus(youtubeId, request.Status);
+                    return Ok(new UpdateStatusResponse(request.Status));
+                }
+            }
+
+            return BadRequest($"{nameof(request.Id)} or ${nameof(request.VideoUrl)} must be defined");
         }
 
         [HttpPost]
