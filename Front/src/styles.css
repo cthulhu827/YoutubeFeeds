@@ -74,6 +74,7 @@
 .channels-table {
     border-collapse: collapse;
     border: 1px solid;
+    width: 100%;
 }
 
 .channels-table-header {
@@ -91,4 +92,14 @@
 
 .has-new {
     background-color: #ADD8E6;
+}
+
+#channels {
+    float: left;
+    width: 400px;
+    margin-right: 20px;
+}
+
+#videos {
+    display: inline;
 }

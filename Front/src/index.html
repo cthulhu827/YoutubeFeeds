@@ -7,30 +7,68 @@
 </head>
 
 <body>
-    <div class="flex-wrapper" data-bind="foreach: videos">
-        <div class="item" data-bind="class: statusClass">
-            <div class="item-header">
-                <div data-bind="if: isUpdating" class="item-loading">
-                    <img src="loading.gif" />
+    <div id="page">
+        <div id="channels">
+            <table class="channels-table">
+                <thead>
+                    <tr>
+                        <th class="channels-table channels-table-header">Channel</th>
+                        <th class="channels-table channels-table-header">New</th>
+                        <th class="channels-table channels-table-header">Unwatched</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: channels">
+                    <tr data-bind="css: { 'has-new': hasNew }">
+                        <td class="channels-table">
+                            <a data-bind="attr: { href: videosUrl }" target=”_blank”>
+                                <span data-bind="text: ($index() + 1)"></span>.
+                                <span data-bind="text: title"></span>
+                            </a>
+                        </td>
+                        <td class="channels-table channels-table-count">
+                            <!-- ko if: hasNew -->
+                            <span data-bind="text: newCount"></span>
+                            <!-- /ko -->
+                        </td>
+                        <td class="channels-table channels-table-count">
+                            <!-- ko if: hasChecked -->
+                            <span data-bind="text: checkedCount"></span>
+                            <!-- /ko -->
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button class="update-button" data-bind="text: updateButton.title, click: updateButton.onClick"></button>
+        </div>
+        <div id="videos">
+            <div class="flex-wrapper" data-bind="foreach: videos">
+                <div class="item" data-bind="class: statusClass">
+                    <div class="item-header">
+                        <div data-bind="if: isUpdating" class="item-loading">
+                            <img src="loading.gif" />
+                        </div>
+                        <div class="item-buttons" data-bind="foreach: vmStatuses">
+                            <!-- ko if: isApplied -->
+                            <span data-bind="text: spanText"></span>
+                            <!-- /ko -->
+                            <!-- ko ifnot: isApplied -->
+                            <button class="item-button" type="button"
+                                data-bind="text: buttonText, click: onClick"></button>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                    <div class="item-video">
+                        <a data-bind="attr: { href: videoUrl }" target=”_blank”>
+                            <img class="item-video-img" data-bind="attr:{src:previewUrl}" />
+                        </a>
+                    </div>
+                    <div class="item-title">
+                        <a data-bind="attr: { href: videoUrl }" target=”_blank”>
+                            <span data-bind="text: title"></span>
+                        </a>
+                    </div>
                 </div>
-                <div class="item-buttons" data-bind="foreach: vmStatuses">
-                    <!-- ko if: isApplied -->
-                    <span data-bind="text: spanText"></span>
-                    <!-- /ko -->
-                    <!-- ko ifnot: isApplied -->
-                    <button class="item-button" type="button" data-bind="text: buttonText, click: onClick"></button>
-                    <!-- /ko -->
-                </div>
-            </div>
-            <div class="item-video">
-                <a data-bind="attr: { href: videoUrl }" target=”_blank”>
-                    <img class="item-video-img" data-bind="attr:{src:previewUrl}" />
-                </a>
-            </div>
-            <div class="item-title">
-                <a data-bind="attr: { href: videoUrl }" target=”_blank”>
-                    <span data-bind="text: title"></span>
-                </a>
             </div>
         </div>
     </div>
@@ -107,8 +145,52 @@
             });
         };
 
+        function VM_UnwatchedChannel(vm) {
+            var self = this;
+
+            self.id = vm.id;
+            self.title = vm.title;
+            self.newCount = vm.new;
+            self.checkedCount = vm.checked;
+
+            self.hasNew = vm.new > 0;
+            self.hasChecked = vm.checked > 0;
+
+            self.videosUrl = "index.html?channelId=" + vm.id;
+        };
+
+        function VM_UpdateButton() {
+            var self = this;
+
+            self.onClick = function () {
+                var request = {};
+                self.title("Updating...");
+                $.ajax({
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    'type': 'POST',
+                    'url': "http://localhost:5000/api/videos/update_all_channels",
+                    'data': JSON.stringify(request),
+                    'dataType': 'json',
+                    'success': function (response) {
+                        self.title("Updated successfully - " + response.newVideosCount + " new video(s)");
+                    },
+                    'error': function (err) {
+                        self.title("Update failed");
+                        console.log(err);
+                    }
+                });
+            };
+
+            self.title = ko.observable("Update");
+        };
+
         var myViewModel = {
-            videos: ko.observable([])
+            videos: ko.observable([]),
+            channels: ko.observable([]),
+            updateButton: new VM_UpdateButton()
         };
 
         ko.applyBindings(myViewModel);
@@ -117,16 +199,25 @@
         const channelId = urlParams.get('channelId');
         console.log("Channel ID = %s", channelId);
 
-        var url = "http://localhost:5000/api/videos/all";
-        if (channelId != null)
-            url = url + "/" + channelId;
-        $.getJSON(url, function (viewModels) {
-            var videos = [];
+        if (channelId != null) {
+            var url = "http://localhost:5000/api/videos/all/" + channelId;
+            $.getJSON(url, function (viewModels) {
+                var videos = [];
+                for (viewModel of viewModels) {
+                    var video = new VM_Video(viewModel);
+                    videos.push(video);
+                }
+                myViewModel.videos(videos);
+            });
+        }
+
+        $.getJSON("http://localhost:5000/api/channels/unwatched", function (viewModels) {
+            var channels = [];
             for (viewModel of viewModels) {
-                var video = new VM_Video(viewModel);
-                videos.push(video);
+                var channel = new VM_UnwatchedChannel(viewModel);
+                channels.push(channel);
             }
-            myViewModel.videos(videos);
+            myViewModel.channels(channels);
         });
     </script>
 </body>
