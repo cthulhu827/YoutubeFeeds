@@ -67,7 +67,7 @@ namespace YoutubeFeeds.Core
 
         public async Task<int> UpdateAllChannels()
         {
-            Console.Write($"{DateTime.Now} Updating channels");
+            Console.WriteLine($"{DateTime.Now} Updating channels");
 
             var channels = await storage.GetAllChannels();
 
@@ -75,7 +75,6 @@ namespace YoutubeFeeds.Core
             var resultCount = 0;
             foreach (var channel in channels)
             {
-                Console.Write(".");
                 var channelParser = new ChannelParser(channel, serviceProvider);
                 var savedVideos = await channelParser.Update();
                 if (savedVideos.Any())

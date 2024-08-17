@@ -23,6 +23,10 @@ namespace YoutubeFeeds.Core
         {
             // Получаем RSS
             var rssXml = await GetRss();
+            if (string.IsNullOrWhiteSpace(rssXml))
+            {
+                return Array.Empty<Video>();
+            }
 
             // Парасим RSS, получаем все содержащиеся в нём видео
             var videosFromRss = ParseChannelRss(rssXml);
@@ -39,11 +43,35 @@ namespace YoutubeFeeds.Core
 
         private async Task<string> GetRss()
         {
-            var client = new HttpClient();
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                $"https://www.youtube.com/feeds/videos.xml?channel_id={channel.YoutubeId}");
-            var response = await client.SendAsync(request);
-            return await response.Content.ReadAsStringAsync();
+            const int tryCount = 3;
+            var result = string.Empty;
+            for (int i = 0; i < tryCount; i++)
+            {
+                result = await TryGetRss();
+                if (!string.IsNullOrWhiteSpace(result)) break;
+            }
+
+            return result;
+        }
+
+        private async Task<string> TryGetRss()
+        {
+            try
+            {
+                Console.WriteLine($"{DateTime.Now} Requesting RSS for channel '{channel.Title}': {channel.RssUrl}");
+                var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(10);
+                var request = new HttpRequestMessage(HttpMethod.Get, channel.RssUrl);
+                var response = await client.SendAsync(request);
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"{DateTime.Now} Got RSS for channel '{channel.Title}': {result.Length} bytes");
+                return result;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine($"{DateTime.Now} Failed to get RSS for channel '{channel.Title}'");
+                return string.Empty;
+            }
         }
 
         private IReadOnlyCollection<Video> ParseChannelRss(string rssXml)

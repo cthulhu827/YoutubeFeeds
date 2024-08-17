@@ -15,6 +15,8 @@ namespace YoutubeFeeds.Core
         public string YoutubeId { get; }
         public string Title { get; }
 
+        public string RssUrl => $"https://www.youtube.com/feeds/videos.xml?channel_id={YoutubeId}";
+
         #region Db details
 
         public const string TableName = "channels";
