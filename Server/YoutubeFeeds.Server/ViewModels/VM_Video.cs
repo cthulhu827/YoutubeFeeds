@@ -7,13 +7,14 @@ namespace YoutubeFeeds.Server.ViewModels
     [DataContract]
     public class VM_Video
     {
-        public VM_Video(Guid id, string title, string previewUrl, string videoUrl, VideoStatus status)
+        public VM_Video(Guid id, string title, string previewUrl, string videoUrl, VideoStatus status, bool isShort)
         {
             Id = id;
             Title = title;
             PreviewUrl = previewUrl;
             VideoUrl = videoUrl;
             Status = status;
+            IsShort = isShort;
         }
 
         [DataMember(IsRequired = true)]
@@ -30,5 +31,8 @@ namespace YoutubeFeeds.Server.ViewModels
 
         [DataMember(IsRequired = true)]
         public VideoStatus Status { get; }
+
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        public bool IsShort { get; }
     }
 }

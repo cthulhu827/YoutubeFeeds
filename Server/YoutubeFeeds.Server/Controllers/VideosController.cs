@@ -26,7 +26,7 @@ namespace YoutubeFeeds.Server.Controllers
             var id = string.IsNullOrWhiteSpace(channelId) ? (Guid?)null : Guid.Parse(channelId);
             var videos = await storage.GetUnwatchedVideos(id);
             return videos
-                .Select(v => new VM_Video(v.Id, v.Title, v.PreviewUrl(), v.VideoUrl(), v.Status))
+                .Select(v => new VM_Video(v.Id, v.Title, v.PreviewUrl(), v.VideoUrl(), v.Status, v.IsShort ?? false))
                 .ToArray();
         }
 

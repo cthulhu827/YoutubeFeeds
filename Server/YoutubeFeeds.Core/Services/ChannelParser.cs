@@ -86,26 +86,24 @@ namespace YoutubeFeeds.Core
             var result = new List<Video>();
             foreach (XmlNode node in nodes!)
             {
-                var videoId = "";
-                foreach (XmlNode childNode in node.ChildNodes)
+                string videoId;
+                var videoUrl = node.SelectSingleNode("ns:link/@href", nsmgr)!.InnerText;
+                bool isShort = videoUrl.Contains("/shorts/");
+                if (isShort)
+                    videoId = new Uri(videoUrl).Segments.Last();
+                else
                 {
-                    if (childNode.Name == "yt:videoId")
-                    {
-                        videoId = childNode.InnerText;
-                        break;
-                    }
+                    var queryString = new Uri(videoUrl).Query;
+                    var queryDictionary = System.Web.HttpUtility.ParseQueryString(queryString);
+                    videoId = queryDictionary["v"];
                 }
-
-                if (string.IsNullOrWhiteSpace(videoId)) continue;
-                
-                //if (videoUrl.Contains("/shorts/")) continue;
 
                 var title = node.SelectSingleNode("ns:title", nsmgr)!.InnerText;
 
                 var published = node.SelectSingleNode("ns:published", nsmgr)!.InnerText;
                 var publishedDateTime = DateTime.Parse(published);
 
-                var video = new Video(Guid.NewGuid(), videoId, title, VideoStatus.New, publishedDateTime, channel.Id);
+                var video = new Video(Guid.NewGuid(), videoId, title, VideoStatus.New, publishedDateTime, channel.Id, isShort);
                 result.Add(video);
             }
 

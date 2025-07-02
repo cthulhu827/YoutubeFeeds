@@ -70,14 +70,16 @@ namespace YoutubeFeeds.Core
                 $"{Video.TitleCol}, " +
                 $"{Video.StatusCol}, " +
                 $"{Video.PublishedCol}, " +
-                $"{Video.ChannelIdCol} " +
+                $"{Video.ChannelIdCol}, " +
+                $"{Video.IsShortCol} " +
                 $") values (" +
                 $"@{nameof(Video.Id)}, " +
                 $"@{nameof(Video.YoutubeId)}, " +
                 $"@{nameof(Video.Title)}, " +
                 $"@{nameof(Video.Status)}, " +
                 $"@{nameof(Video.Published)}, " +
-                $"@{nameof(Video.ChannelId)} " +
+                $"@{nameof(Video.ChannelId)}, " +
+                $"@{nameof(Video.IsShort)} " +
                 $")";
             using (var context = await dbConnectionFactory.Open())
             {

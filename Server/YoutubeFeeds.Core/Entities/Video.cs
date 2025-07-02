@@ -2,13 +2,10 @@
 
 namespace YoutubeFeeds.Core
 {
-    /// <summary>
-    /// Сущность РМС.
-    /// </summary>
     public class Video
     {
         public Video(Guid id, string youtubeId, string title, VideoStatus status, DateTime published,
-            Guid? channelId)
+            Guid? channelId, bool? isShort)
         {
             Id = id;
             YoutubeId = youtubeId;
@@ -16,6 +13,7 @@ namespace YoutubeFeeds.Core
             Status = status;
             Published = published;
             ChannelId = channelId;
+            IsShort = isShort;
         }
 
         public Guid Id { get; }
@@ -24,6 +22,7 @@ namespace YoutubeFeeds.Core
         public VideoStatus Status { get; }
         public DateTime Published { get; }
         public Guid? ChannelId { get; }
+        public bool? IsShort { get; }
 
         public string VideoUrl() => $"https://www.youtube.com/watch?v={YoutubeId}";
 
@@ -39,6 +38,7 @@ namespace YoutubeFeeds.Core
         public const string StatusCol = "status";
         public const string PublishedCol = "published";
         public const string ChannelIdCol = "channel_id";
+        public const string IsShortCol = "is_short";
 
         public static readonly string AllFieldsWithAliases = string.Join(", ",
             $"{IdCol} \"{nameof(Id)}\"",
@@ -46,7 +46,8 @@ namespace YoutubeFeeds.Core
             $"{TitleCol} \"{nameof(Title)}\"",
             $"{StatusCol} \"{nameof(Status)}\"",
             $"{PublishedCol} \"{nameof(Published)}\"",
-            $"{ChannelIdCol} \"{nameof(ChannelId)}\""
+            $"{ChannelIdCol} \"{nameof(ChannelId)}\"",
+            $"{IsShortCol} \"{nameof(IsShort)}\""
         );
 
         #endregion

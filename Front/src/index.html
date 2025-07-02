@@ -48,6 +48,9 @@
                         <div data-bind="if: isUpdating" class="item-loading">
                             <img src="loading.gif" />
                         </div>
+						<div class="item-buttons">
+							<span data-bind="text: isShort"></span>
+						</div>
                         <div class="item-buttons" data-bind="foreach: vmStatuses">
                             <!-- ko if: isApplied -->
                             <span data-bind="text: spanText"></span>
@@ -88,6 +91,7 @@
             self.title = vm.title;
             self.previewUrl = vm.previewUrl;
             self.videoUrl = vm.videoUrl;
+            self.isShort = vm.isShort ? "Shorts" : "";
             self.status = ko.observable(vm.status);
 
             self.isUpdating = ko.observable(false);
