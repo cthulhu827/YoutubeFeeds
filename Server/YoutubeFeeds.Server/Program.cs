@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -23,11 +21,11 @@ namespace YoutubeFeeds.Server
         {
             var configurationBuilder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", false)
-                .AddJsonFile("appsettings.Development.json", false);
+                .AddJsonFile("appsettings.local.json", true);
 
             var envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             if (!string.IsNullOrWhiteSpace(envName))
-                configurationBuilder.AddJsonFile($"appsettings.{envName}.json", true);
+                configurationBuilder.AddJsonFile($"appsettings.{envName}.json", false);
 
             return configurationBuilder
                 .AddEnvironmentVariables()

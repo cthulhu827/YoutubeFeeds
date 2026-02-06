@@ -35,6 +35,7 @@ namespace YoutubeFeeds.Server
             services.AddSingleton<IDbSettings>(appSettings);
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<IYoutubeSettings>(appSettings);
+            services.AddSingleton<IRssProxySettings>(appSettings);
 
             services.AddControllers();
 

@@ -1,0 +1,9 @@
+version: '3.4'
+services:
+
+  ytf-proxy-go:
+    container_name: ytf-proxy-go
+    build: .
+    restart: always
+    ports:
+      - 5231:5231

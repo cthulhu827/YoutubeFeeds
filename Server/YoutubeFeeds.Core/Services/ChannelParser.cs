@@ -12,11 +12,14 @@ namespace YoutubeFeeds.Core
     {
         private readonly Channel channel;
         private readonly VideoStorage storage;
+        private readonly string? rssProxy;
 
         public ChannelParser(Channel channel, IServiceProvider serviceProvider)
         {
             this.channel = channel;
             storage = serviceProvider.GetRequiredService<VideoStorage>();
+            var appSettings = serviceProvider.GetService<IRssProxySettings>();
+            rssProxy = appSettings?.RssProxy;
         }
 
         public async Task<Video[]> Update()
@@ -58,18 +61,22 @@ namespace YoutubeFeeds.Core
         {
             try
             {
-                Console.WriteLine($"{DateTime.Now} Requesting RSS for channel '{channel.Title}': {channel.RssUrl}");
+                var requestUrl = string.IsNullOrWhiteSpace(rssProxy) 
+                    ? channel.RssUrl 
+                    : $"{rssProxy}/api/get-rss?url={Uri.EscapeDataString(channel.RssUrl)}";
+                
+                Console.WriteLine($"{DateTime.Now} Requesting RSS for channel '{channel.Title}': {requestUrl}");
                 var client = new HttpClient();
                 client.Timeout = TimeSpan.FromSeconds(10);
-                var request = new HttpRequestMessage(HttpMethod.Get, channel.RssUrl);
+                var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
                 var response = await client.SendAsync(request);
                 var result = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"{DateTime.Now} Got RSS for channel '{channel.Title}': {result.Length} bytes");
                 return result;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine($"{DateTime.Now} Failed to get RSS for channel '{channel.Title}'");
+                Console.WriteLine($"{DateTime.Now} Failed to get RSS for channel '{channel.Title}': {e}");
                 return string.Empty;
             }
         }
