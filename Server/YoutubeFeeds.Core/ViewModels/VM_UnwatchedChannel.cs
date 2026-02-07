@@ -6,10 +6,10 @@ namespace YoutubeFeeds.Core
     [DataContract]
     public class VM_UnwatchedChannel
     {
-        public VM_UnwatchedChannel(Guid id, string title, int _new, int _checked)
+        public VM_UnwatchedChannel(Channel channel, int _new, int _checked)
         {
-            Id = id;
-            Title = title;
+            Id = channel.Id;
+            Title = channel.Title;
             New = _new;
             Checked = _checked;
         }

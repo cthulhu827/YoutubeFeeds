@@ -131,15 +131,65 @@ namespace YoutubeFeeds.Core
                 $"insert into {Channel.TableName} (" +
                 $"{Channel.IdCol}, " +
                 $"{Channel.YoutubeIdCol}, " +
-                $"{Channel.TitleCol} " +
+                $"{Channel.TitleCol}, " +
+                $"{Channel.LastUpdateCol}, " +
+                $"{Channel.LastCheckCol}, " +
+                $"{Channel.LastCheckDurationCol}, " +
+                $"{Channel.LastCheckSuccessCol} " +
                 $") values (" +
                 $"@{nameof(Channel.Id)}, " +
                 $"@{nameof(Channel.YoutubeId)}, " +
-                $"@{nameof(Channel.Title)} " +
+                $"@{nameof(Channel.Title)}, " +
+                $"@{nameof(Channel.LastUpdate)}, " +
+                $"@{nameof(Channel.LastCheck)}, " +
+                $"@{nameof(Channel.LastCheckDuration)}, " +
+                $"@{nameof(Channel.LastCheckSuccess)} " +
                 $") on conflict on constraint {Channel.YoutubeIdConstraint} do nothing ";
             using (var context = await dbConnectionFactory.Open())
             {
                 await context.ExecuteAsync(query, channel);
+            }
+        }
+
+        public async Task UpdateChannel(ChannelUpdate channelUpdate)
+        {
+            var lastUpdateSet = channelUpdate.LastUpdate == null
+                ? string.Empty
+                : $"{Channel.LastUpdateCol} = @{nameof(ChannelUpdate.LastUpdate)}, ";
+            var query =
+                $"update {Channel.TableName} " +
+                $"set {lastUpdateSet}" +
+                $"{Channel.LastCheckCol} = @{nameof(ChannelUpdate.LastCheck)}, " +
+                $"{Channel.LastCheckDurationCol} = @{nameof(ChannelUpdate.LastCheckDuration)}, " +
+                $"{Channel.LastCheckSuccessCol} = @{nameof(ChannelUpdate.LastCheckSuccess)} " +
+                $"where {Channel.IdCol} = @{nameof(ChannelUpdate.Id)} ";
+            using (var context = await dbConnectionFactory.Open())
+            {
+                await context.ExecuteAsync(query, channelUpdate);
+            }
+        }
+
+        public async Task<UpdateStatistics?> GetUpdateStatistics()
+        {
+            var maxCheckQuery = $"select MAX({Channel.LastCheckCol}) from {Channel.TableName}";
+            using (var context = await dbConnectionFactory.Open())
+            {
+                var maxLastCheck = await context.QueryFirstOrDefaultAsync<DateTime?>(maxCheckQuery);
+                if (maxLastCheck == null)
+                {
+                    return null;
+                }
+
+                var statsQuery =
+                    $"select " +
+                    $"@maxLastCheck as {nameof(UpdateStatistics.LastCheck)}, " +
+                    $"AVG({Channel.LastCheckDurationCol})::int as {nameof(UpdateStatistics.LastCheckDuration)}, " +
+                    $"SUM(CASE WHEN {Channel.LastCheckSuccessCol} = true THEN 1 ELSE 0 END)::int as {nameof(UpdateStatistics.SuccessCount)}, " +
+                    $"SUM(CASE WHEN {Channel.LastCheckSuccessCol} = false THEN 1 ELSE 0 END)::int as {nameof(UpdateStatistics.FailCount)} " +
+                    $"from {Channel.TableName} " +
+                    $"where {Channel.LastCheckCol} = @maxLastCheck";
+                
+                return await context.QueryFirstAsync<UpdateStatistics>(statsQuery, new { maxLastCheck });
             }
         }
     }

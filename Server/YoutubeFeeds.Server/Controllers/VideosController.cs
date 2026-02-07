@@ -32,10 +32,12 @@ namespace YoutubeFeeds.Server.Controllers
 
         [HttpGet]
         [Route("/api/channels/unwatched")]
-        public async Task<VM_UnwatchedChannel[]> GetUnwatchedChannels()
+        public async Task<VM_Channels> GetUnwatchedChannels()
         {
-            var result = await channelService.GetUnwatchedChannels();
-            return result.ToArray();
+            var channels = await channelService.GetUnwatchedChannels();
+            var statistics = await channelService.GetStatistics();
+            var vmStatistics = statistics != null ? new VM_UpdateStatistics(statistics) : null;
+            return new VM_Channels(channels.ToArray(), vmStatistics);
         }
 
         [HttpPost]

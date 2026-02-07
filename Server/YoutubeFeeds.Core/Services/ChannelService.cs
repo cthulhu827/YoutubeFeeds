@@ -35,7 +35,7 @@ namespace YoutubeFeeds.Core
             Console.WriteLine($"Video Id: {videoId}");
             var (channelId, channelTitle) = await GetChannel(videoId);
             Console.WriteLine($"Got channel info: Id = {channelId}, Title = {channelTitle}");
-            var channel = new Channel(Guid.NewGuid(), channelId, channelTitle);
+            var channel = new Channel(Guid.NewGuid(), channelId, channelTitle, null, null, null, null);
             await storage.SaveChannel(channel);
             // get channel id by video id https://www.googleapis.com/youtube/v3/videos?part=snippet&id=csJPwynhWkA&key=AIzaSyBoyPu4xHak1m76G3Db-mT21m9hP-KJrm4
             // get channel info by channel id https://www.googleapis.com/youtube/v3/channels?part=snippet&id=UC_Q1vhf7wcR_zGlc5ahAg0A&key=AIzaSyBoyPu4xHak1m76G3Db-mT21m9hP-KJrm4
@@ -58,7 +58,7 @@ namespace YoutubeFeeds.Core
             {
                 var newCount = videos.Count(v => v.Status == VideoStatus.New && v.ChannelId == channel.Id);
                 var checkedCount = videos.Count(v => v.Status == VideoStatus.Checked && v.ChannelId == channel.Id);
-                var vm = new VM_UnwatchedChannel(channel.Id, channel.Title, newCount, checkedCount);
+                var vm = new VM_UnwatchedChannel(channel, newCount, checkedCount);
                 result.Add(vm);
             }
 
@@ -73,15 +73,18 @@ namespace YoutubeFeeds.Core
 
             var result = new Dictionary<Channel, Video[]>();
             var resultCount = 0;
+            var now = DateTime.UtcNow;
             foreach (var channel in channels)
             {
                 var channelParser = new ChannelParser(channel, serviceProvider);
-                var savedVideos = await channelParser.Update();
-                if (savedVideos.Any())
+                var channelUpdate = await channelParser.Update(now);
+                if (channelUpdate.Videos.Any())
                 {
-                    result.Add(channel, savedVideos);
-                    resultCount += savedVideos.Length;
+                    result.Add(channel, channelUpdate.Videos);
+                    resultCount += channelUpdate.Videos.Length;
                 }
+
+                await storage.UpdateChannel(channelUpdate);
             }
 
             Console.WriteLine();
@@ -102,7 +105,9 @@ namespace YoutubeFeeds.Core
         private async Task<(string, string)> GetChannel(string videoId)
         {
             var client = new HttpClient();
-            var url = $"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={videoId}&key={youtubeSettings.YoutubeApiKey}";
+            var url =
+                $"https://www.googleapis.com/youtube/v3/videos?part=snippet" +
+                $"&id={videoId}&key={youtubeSettings.YoutubeApiKey}";
             Console.WriteLine(url);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             var response = await client.SendAsync(request);
@@ -113,6 +118,11 @@ namespace YoutubeFeeds.Core
             var channelTitle = data!.SelectToken("items[0].snippet.channelTitle")!.Value<string>();
 
             return (channelId, channelTitle);
+        }
+
+        public async Task<UpdateStatistics?> GetStatistics()
+        {
+            return await storage.GetUpdateStatistics();
         }
     }
 }
