@@ -37,6 +37,7 @@ namespace YoutubeFeeds.Core
         public const string LastCheckCol = "last_check";
         public const string LastCheckDurationCol = "last_check_duration";
         public const string LastCheckSuccessCol = "last_check_success";
+        public const string IdxCol = "idx";
 
         public static readonly string AllFieldsWithAliases = string.Join(", ",
             $"{IdCol} \"{nameof(Id)}\"",

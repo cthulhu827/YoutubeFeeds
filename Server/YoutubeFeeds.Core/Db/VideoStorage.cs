@@ -53,7 +53,8 @@ namespace YoutubeFeeds.Core
             var query =
                 $"select {Channel.AllFieldsWithAliases} " +
                 $"from {Channel.TableName} " +
-                $"where {Channel.IdCol} = any(@{nameof(channelIds)})";
+                $"where {Channel.IdCol} = any(@{nameof(channelIds)}) " +
+                $"order by {Channel.IdxCol} ";
             using (var context = await dbConnectionFactory.Open())
             {
                 var result = await context.QueryAsync<Channel>(query, new { channelIds });
