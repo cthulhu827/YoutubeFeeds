@@ -10,17 +10,37 @@ namespace YoutubeFeeds.Server.ViewModels
         public VM_UpdateStatistics(UpdateStatistics statistics)
         {
             var minutesSinceLastCheck = (int)(DateTime.UtcNow - statistics.LastCheck).TotalMinutes;
-            LastCheck = $"{minutesSinceLastCheck} min";
+            LastCheck = minutesSinceLastCheck;
             LastCheckDuration = statistics.LastCheckDuration;
             SuccessCount = statistics.SuccessCount;
             FailCount = statistics.FailCount;
+
+            LastCheckState = minutesSinceLastCheck switch
+            {
+                < 40 => OpState.Green,
+                < 60 => OpState.Yellow,
+                _ => OpState.Red
+            };
+
+            LastCheckDurationState = LastCheckDuration switch
+            {
+                < 1000 => OpState.Green,
+                < 2000 => OpState.Yellow,
+                _ => OpState.Red
+            };
         }
 
         [DataMember(IsRequired = true)]
-        public string LastCheck { get; }
+        public int LastCheck { get; }
+
+        [DataMember(IsRequired = true)]
+        public OpState LastCheckState { get; }
 
         [DataMember(IsRequired = true)]
         public int LastCheckDuration { get; }
+
+        [DataMember(IsRequired = true)]
+        public OpState LastCheckDurationState { get; }
 
         [DataMember(IsRequired = true)]
         public int SuccessCount { get; }
