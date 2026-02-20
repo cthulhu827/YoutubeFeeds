@@ -123,6 +123,13 @@ namespace YoutubeFeeds.Core
                 string videoId;
                 var videoUrl = node.SelectSingleNode("ns:link/@href", nsmgr)!.InnerText;
                 bool isShort = videoUrl.Contains("/shorts/");
+
+                if (isShort && channel.SkipShorts == true)
+                {
+                    Console.WriteLine($"Skip shorts: {videoUrl}");
+                    continue;
+                }
+
                 if (isShort)
                     videoId = new Uri(videoUrl).Segments.Last();
                 else

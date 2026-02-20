@@ -35,7 +35,7 @@ namespace YoutubeFeeds.Core
             Console.WriteLine($"Video Id: {videoId}");
             var (channelId, channelTitle) = await GetChannel(videoId);
             Console.WriteLine($"Got channel info: Id = {channelId}, Title = {channelTitle}");
-            var channel = new Channel(Guid.NewGuid(), channelId, channelTitle, null, null, null, null);
+            var channel = new Channel(Guid.NewGuid(), channelId, channelTitle, null, null, null, null, false);
             await storage.SaveChannel(channel);
             // get channel id by video id https://www.googleapis.com/youtube/v3/videos?part=snippet&id=csJPwynhWkA&key=AIzaSyBoyPu4xHak1m76G3Db-mT21m9hP-KJrm4
             // get channel info by channel id https://www.googleapis.com/youtube/v3/channels?part=snippet&id=UC_Q1vhf7wcR_zGlc5ahAg0A&key=AIzaSyBoyPu4xHak1m76G3Db-mT21m9hP-KJrm4

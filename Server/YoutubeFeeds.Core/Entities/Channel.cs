@@ -4,7 +4,7 @@ namespace YoutubeFeeds.Core
 {
     public class Channel
     {
-        public Channel(Guid id, string youtubeId, string title, DateTime? lastUpdate, DateTime? lastCheck, int? lastCheckDuration, bool? lastCheckSuccess)
+        public Channel(Guid id, string youtubeId, string title, DateTime? lastUpdate, DateTime? lastCheck, int? lastCheckDuration, bool? lastCheckSuccess, bool? skipShorts)
         {
             Id = id;
             YoutubeId = youtubeId;
@@ -13,6 +13,7 @@ namespace YoutubeFeeds.Core
             LastCheck = lastCheck;
             LastCheckDuration = lastCheckDuration;
             LastCheckSuccess = lastCheckSuccess;
+            SkipShorts = skipShorts;
         }
 
         public Guid Id { get; }
@@ -22,6 +23,7 @@ namespace YoutubeFeeds.Core
         public DateTime? LastCheck { get; }
         public int? LastCheckDuration { get; }
         public bool? LastCheckSuccess { get; }
+        public bool? SkipShorts { get; }
 
         public string RssUrl => $"https://www.youtube.com/feeds/videos.xml?channel_id={YoutubeId}";
 
@@ -37,6 +39,7 @@ namespace YoutubeFeeds.Core
         public const string LastCheckCol = "last_check";
         public const string LastCheckDurationCol = "last_check_duration";
         public const string LastCheckSuccessCol = "last_check_success";
+        public const string SkipShortsCol = "skip_shorts";
         public const string IdxCol = "idx";
 
         public static readonly string AllFieldsWithAliases = string.Join(", ",
@@ -46,7 +49,8 @@ namespace YoutubeFeeds.Core
             $"{LastUpdateCol} \"{nameof(LastUpdate)}\"",
             $"{LastCheckCol} \"{nameof(LastCheck)}\"",
             $"{LastCheckDurationCol} \"{nameof(LastCheckDuration)}\"",
-            $"{LastCheckSuccessCol} \"{nameof(LastCheckSuccess)}\""
+            $"{LastCheckSuccessCol} \"{nameof(LastCheckSuccess)}\"",
+            $"{SkipShortsCol} \"{nameof(SkipShorts)}\""
         );
 
         #endregion

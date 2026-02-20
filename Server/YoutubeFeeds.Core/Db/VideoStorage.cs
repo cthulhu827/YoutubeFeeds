@@ -136,7 +136,8 @@ namespace YoutubeFeeds.Core
                 $"{Channel.LastUpdateCol}, " +
                 $"{Channel.LastCheckCol}, " +
                 $"{Channel.LastCheckDurationCol}, " +
-                $"{Channel.LastCheckSuccessCol} " +
+                $"{Channel.LastCheckSuccessCol}, " +
+                $"{Channel.SkipShortsCol} " +
                 $") values (" +
                 $"@{nameof(Channel.Id)}, " +
                 $"@{nameof(Channel.YoutubeId)}, " +
@@ -144,7 +145,8 @@ namespace YoutubeFeeds.Core
                 $"@{nameof(Channel.LastUpdate)}, " +
                 $"@{nameof(Channel.LastCheck)}, " +
                 $"@{nameof(Channel.LastCheckDuration)}, " +
-                $"@{nameof(Channel.LastCheckSuccess)} " +
+                $"@{nameof(Channel.LastCheckSuccess)}, " +
+                $"@{nameof(Channel.SkipShorts)} " +
                 $") on conflict on constraint {Channel.YoutubeIdConstraint} do nothing ";
             using (var context = await dbConnectionFactory.Open())
             {
